@@ -5,6 +5,7 @@
   "kitReceivedTimed": "You have received the %kit% kit for %time% seconds.",
   "kitGiven": "You have given the %kit% kit to %player%.",
   "kitGivenTimed": "You have given the %kit% kit to %player% for %time% seconds.",
+  "kitDoesNotExist": "The kit specified does not exist!",
   "arenaJoin": "You have joined the lobby for arena %arena%.",
   "arenaSend": "You have sent %player% to arena %arena%.",
   "arenaLeave": "You have left arena %arena%",

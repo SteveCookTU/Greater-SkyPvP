@@ -6,6 +6,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +20,7 @@ public class CmdStats implements TabExecutor {
     }
 
     @Override
-    public boolean onCommand(CommandSender commandSender, Command command, String s, String[] strings) {
+    public boolean onCommand(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, String[] strings) {
         if(commandSender.hasPermission("greaterskypvp.default")) {
             if(strings.length == 0) {
                 if(commandSender instanceof Player) {
@@ -39,7 +40,7 @@ public class CmdStats implements TabExecutor {
     }
 
     @Override
-    public List<String> onTabComplete(CommandSender commandSender, Command command, String s, String[] strings) {
+    public List<String> onTabComplete(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, String[] strings) {
         List<String> completions = new ArrayList<>();
         if(strings.length == 0) {
             if(commandSender.hasPermission("greaterskypvp.default")) {

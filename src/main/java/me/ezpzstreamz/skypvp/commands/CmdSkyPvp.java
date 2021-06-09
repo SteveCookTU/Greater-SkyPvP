@@ -7,6 +7,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,7 +21,7 @@ plugin = p;
     }
 
     @Override
-    public boolean onCommand(CommandSender s, Command cmd, String l, String[] a) {
+    public boolean onCommand(@NotNull CommandSender s, @NotNull Command cmd, @NotNull String l, String[] a) {
         if(s.hasPermission("greaterskypvp.admin")) {
             if (a.length < 3)
                 return false;
@@ -109,7 +110,7 @@ plugin = p;
     }
 
     @Override
-    public List<String> onTabComplete(CommandSender commandSender, Command command, String s, String[] strings) {
+    public List<String> onTabComplete(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, String[] strings) {
         List<String> completions = new ArrayList<>();
         if(commandSender.hasPermission("greaterskypvp.admin")) {
             switch (strings.length) {

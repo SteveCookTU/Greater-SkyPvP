@@ -9,6 +9,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,12 +22,17 @@ public class CmdKit implements TabExecutor {
         plugin = p;
     }
 
+    @SuppressWarnings("DuplicatedCode")
     @Override
-    public boolean onCommand(CommandSender s, Command cmd, String l, String[] a) {
+    public boolean onCommand(@NotNull CommandSender s, @NotNull Command cmd, @NotNull String l, String[] a) {
         if(a.length == 1) {
             if(s instanceof Player) {
                 if(s.hasPermission("greaterskypvp.default")) {
                     Player p = (Player) s;
+                    if(!plugin.getKitManager().getKits().contains(a[0])) {
+                        p.sendMessage(ChatColor.translateAlternateColorCodes('&', plugin.getMessageManager().getMessage("kitDoesNotExist")));
+                        return true;
+                    }
                     removeTask(p);
                     plugin.getKitManager().giveKit(p, a[0]);
                     plugin.getKitManager().assignKit(p.getUniqueId().toString(), a[0]);
@@ -42,6 +48,10 @@ public class CmdKit implements TabExecutor {
             if(s.hasPermission("greaterskypvp.admin")) {
                 Player p = s.getServer().getPlayer(a[1]);
                 if(p != null && p.isOnline()) {
+                    if(!plugin.getKitManager().getKits().contains(a[0])) {
+                        s.sendMessage(ChatColor.translateAlternateColorCodes('&', plugin.getMessageManager().getMessage("kitDoesNotExist")));
+                        return true;
+                    }
                     removeTask(p);
                     plugin.getKitManager().giveKit(p, a[0]);
                     plugin.getKitManager().assignKit(p.getUniqueId().toString(), a[0]);
@@ -60,6 +70,10 @@ public class CmdKit implements TabExecutor {
                     kitTimer = Integer.parseInt(a[2]);
                     Player p = s.getServer().getPlayer(a[1]);
                     if(p != null && p.isOnline()) {
+                        if(!plugin.getKitManager().getKits().contains(a[0])) {
+                            s.sendMessage(ChatColor.translateAlternateColorCodes('&', plugin.getMessageManager().getMessage("kitDoesNotExist")));
+                            return true;
+                        }
                         removeTask(p);
                         String prevKit = plugin.getKitManager().getAssignedKitName(p.getUniqueId().toString());
                         plugin.getKitManager().giveKit(p, a[0]);
@@ -90,7 +104,7 @@ public class CmdKit implements TabExecutor {
     }
 
     @Override
-    public List<String> onTabComplete(CommandSender commandSender, Command command, String s, String[] strings) {
+    public List<String> onTabComplete(@NotNull CommandSender commandSender, @NotNull Command command, @NotNull String s, String[] strings) {
         List<String> completions = new ArrayList<>();
         if(strings.length == 1) {
             completions = plugin.getKitManager().getKits();
