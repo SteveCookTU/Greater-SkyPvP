@@ -51,6 +51,8 @@ public class CmdArena implements TabExecutor {
                         plugin.getArenaManager().addPlayerToQueue(arenaName, p);
                         p.sendMessage(ChatColor.translateAlternateColorCodes('&', plugin.getMessageManager().getMessage("arenaJoin").replaceAll("%arena%", arenaName)));
                         s.sendMessage(ChatColor.translateAlternateColorCodes('&', plugin.getMessageManager().getMessage("arenaSend").replaceAll("%arena%", arenaName).replaceAll("%player%", p.getDisplayName())));
+                    } else {
+                        s.sendMessage(ChatColor.translateAlternateColorCodes('&', plugin.getMessageManager().getMessage("arenaNotSetup")));
                     }
                 }
             } else {

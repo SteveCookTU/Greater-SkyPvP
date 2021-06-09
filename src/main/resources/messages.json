@@ -1,5 +1,5 @@
 {
-  "noPermission": "§4You do not have permission to use this command.",
+  "noPermission": "&4You do not have permission to use this command.",
   "statsMessage": "Stats: \nKills: %kills% \nDeaths:%deaths%",
   "kitReceived": "You have received the %kit% kit.",
   "kitReceivedTimed": "You have received the %kit% kit for %time% seconds.",
@@ -11,5 +11,6 @@
   "arenaStarting": "Your duel against %opponent% will start in %time% second(s).",
   "arenaStarted": "Your duel against %opponent% has started!",
   "arenaQueue": "There are %count% matche(s) before your duel.",
-  "arenaCantLeave": "You can't leave an arena in the middle of a duel!"
+  "arenaCantLeave": "You can't leave an arena in the middle of a duel!",
+  "arenaNotSetup": "The arena is not setup! Please contact staff."
 }
