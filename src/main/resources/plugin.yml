@@ -1,0 +1,21 @@
+name: GreaterSkyPvP
+main: me.ezpzstreamz.skypvp.GreaterSkyPvpPlugin
+version: 1.0
+api-version: 1.16
+
+softdepend:
+  - PlaceholderAPI
+
+commands:
+  skypvp:
+    description: Greater SkyPvP admin command.
+    usage: /skypvp
+  skyarena:
+    description: Use to teleport to an arena.
+    usage: /arena <arenaName>
+  skykit:
+    description: Use to obtain a specified kit.
+    usage: /skykit <kitName>
+  skystats:
+    description: Use to obtain player stats.
+    usage: /skystats [playerName]

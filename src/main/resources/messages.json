@@ -1,0 +1,15 @@
+{
+  "noPermission": "§4You do not have permission to use this command.",
+  "statsMessage": "Stats: \nKills: %kills% \nDeaths:%deaths%",
+  "kitReceived": "You have received the %kit% kit.",
+  "kitReceivedTimed": "You have received the %kit% kit for %time% seconds.",
+  "kitGiven": "You have given the %kit% kit to %player%.",
+  "kitGivenTimed": "You have given the %kit% kit to %player% for %time% seconds.",
+  "arenaJoin": "You have joined the lobby for arena %arena%.",
+  "arenaSend": "You have sent %player% to arena %arena%.",
+  "arenaLeave": "You have left arena %arena%",
+  "arenaStarting": "Your duel against %opponent% will start in %time% second(s).",
+  "arenaStarted": "Your duel against %opponent% has started!",
+  "arenaQueue": "There are %count% matche(s) before your duel.",
+  "arenaCantLeave": "You can't leave an arena in the middle of a duel!"
+}
