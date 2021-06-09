@@ -79,19 +79,20 @@ plugin = p;
                             try {
                                 spawnPoint = Integer.parseInt(a[3]);
                                 switch (spawnPoint) {
-                                    case 0 -> {
+                                    case 0:
                                         plugin.getArenaManager().getArena(arenaName).setSpawnLocation(((Player) s).getLocation());
                                         s.sendMessage("[SkyPvP] " + arenaName + " lobby spawn point set.");
-                                    }
-                                    case 1 -> {
+                                        break;
+                                    case 1:
                                         plugin.getArenaManager().getArena(arenaName).setPlayer1Location(((Player) s).getLocation());
                                         s.sendMessage("[SkyPvP] " + arenaName + " player 1 spawn point set.");
-                                    }
-                                    case 2 -> {
+                                        break;
+                                    case 2:
                                         plugin.getArenaManager().getArena(arenaName).setPlayer2Location(((Player) s).getLocation());
                                         s.sendMessage("[SkyPvP] " + arenaName + " player 2 spawn point set.");
-                                    }
-                                    default -> throw new Exception();
+                                        break;
+                                    default:
+                                        throw new Exception();
                                 }
                             } catch (Exception e) {
                                 s.sendMessage("[SkyPvP] Selected spawn point invalid. Valid range: 0-2");
