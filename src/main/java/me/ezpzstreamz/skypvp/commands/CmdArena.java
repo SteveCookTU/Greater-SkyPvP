@@ -23,7 +23,6 @@ public class CmdArena implements TabExecutor {
 
     @Override
     public boolean onCommand(@NotNull CommandSender s, @NotNull Command cmd, @NotNull String l, String[] a) {
-        Bukkit.broadcastMessage("Command ran");
         if(a.length == 1) {
             if(s instanceof Player) {
                 if(s.hasPermission("greaterskypvp.default")) {
@@ -33,6 +32,8 @@ public class CmdArena implements TabExecutor {
                         p.teleport(plugin.getArenaManager().getArena(arenaName).getSpawnLocation(), PlayerTeleportEvent.TeleportCause.PLUGIN);
                         plugin.getArenaManager().addPlayerToQueue(arenaName, p);
                         p.sendMessage(ChatColor.translateAlternateColorCodes('&', plugin.getMessageManager().getMessage("arenaJoin").replaceAll("%arena%", arenaName)));
+                    } else {
+                        s.sendMessage(ChatColor.translateAlternateColorCodes('&', plugin.getMessageManager().getMessage("arenaNotSetup")));
                     }
                 } else {
                     s.sendMessage(ChatColor.translateAlternateColorCodes('&', plugin.getMessageManager().getMessage("noPermission")));

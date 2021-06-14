@@ -81,15 +81,15 @@ plugin = p;
                                 spawnPoint = Integer.parseInt(a[3]);
                                 switch (spawnPoint) {
                                     case 0:
-                                        plugin.getArenaManager().getArena(arenaName).setSpawnLocation(((Player) s).getLocation());
+                                        plugin.getArenaManager().setLocation(arenaName, spawnPoint, ((Player) s).getLocation());
                                         s.sendMessage("[SkyPvP] " + arenaName + " lobby spawn point set.");
                                         break;
                                     case 1:
-                                        plugin.getArenaManager().getArena(arenaName).setPlayer1Location(((Player) s).getLocation());
+                                        plugin.getArenaManager().setLocation(arenaName, spawnPoint, ((Player) s).getLocation());
                                         s.sendMessage("[SkyPvP] " + arenaName + " player 1 spawn point set.");
                                         break;
                                     case 2:
-                                        plugin.getArenaManager().getArena(arenaName).setPlayer2Location(((Player) s).getLocation());
+                                        plugin.getArenaManager().setLocation(arenaName, spawnPoint, ((Player) s).getLocation());
                                         s.sendMessage("[SkyPvP] " + arenaName + " player 2 spawn point set.");
                                         break;
                                     default:

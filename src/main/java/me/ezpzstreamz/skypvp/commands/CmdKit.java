@@ -8,6 +8,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 
@@ -76,9 +77,10 @@ public class CmdKit implements TabExecutor {
                         }
                         removeTask(p);
                         String prevKit = plugin.getKitManager().getAssignedKitName(p.getUniqueId().toString());
+                        ItemStack[] prevItems = p.getInventory().getContents().clone();
                         plugin.getKitManager().giveKit(p, a[0]);
                         plugin.getKitManager().assignKit(p.getUniqueId().toString(), a[0]);
-                        plugin.getKitManager().addTask(p, new KitBukkitRunnable(p, prevKit, plugin.getKitManager()).runTaskLater(plugin, 20L * kitTimer));
+                        plugin.getKitManager().addTask(p, new KitBukkitRunnable(p, prevKit, plugin.getKitManager(), prevItems).runTaskLater(plugin, 20L * kitTimer));
                         p.sendMessage(ChatColor.translateAlternateColorCodes('&', plugin.getMessageManager().getMessage("kitReceivedTimed").replaceAll("%kit%", a[0]).replaceAll("%time%", "" + kitTimer)));
                         s.sendMessage(ChatColor.translateAlternateColorCodes('&', plugin.getMessageManager().getMessage("kitGivenTimed").replaceAll("%kit%", a[0]).replaceAll("%time%", "" + kitTimer).replace("%player%", p.getDisplayName())));
                     }
@@ -118,36 +120,39 @@ public class CmdKit implements TabExecutor {
         return completions;
     }
 
-
-
     class KitBukkitRunnable extends BukkitRunnable {
 
         private final String previousKit;
         private final Player player;
         private final KitManager kitManager;
+        private final ItemStack[] prevItems;
 
-        KitBukkitRunnable(Player pl, String prev, KitManager km) {
+        KitBukkitRunnable(Player pl, String prev, KitManager km, ItemStack[] prevItems) {
             super();
             previousKit = prev;
             player = pl;
             kitManager = km;
+            this.prevItems = prevItems;
         }
 
         @Override
         public void run() {
-            if(player != null && player.isOnline()) {
-                player.getInventory().clear();
-                kitManager.giveKit(player, previousKit);
-                kitManager.assignKit(player.getUniqueId().toString(), previousKit);
-            }
+            resetInv();
         }
 
         @Override
         public synchronized void cancel() throws IllegalStateException {
             super.cancel();
+            resetInv();
+        }
+
+        private void resetInv() {
             if(player != null && player.isOnline()) {
                 player.getInventory().clear();
-                kitManager.giveKit(player, previousKit);
+                for(int i = 0; i < prevItems.length; i++) {
+                    if(prevItems[i] != null)
+                        player.getInventory().setItem(i, prevItems[i]);
+                }
                 kitManager.assignKit(player.getUniqueId().toString(), previousKit);
             }
         }

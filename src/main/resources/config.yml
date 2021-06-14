@@ -1,0 +1,8 @@
+mysql:
+  enabled: false
+  username: ''
+  password: ''
+  host: ''
+  port: ''
+  database: ''
+  maxConnections: 10

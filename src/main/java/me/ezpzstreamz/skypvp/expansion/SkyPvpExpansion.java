@@ -51,8 +51,9 @@ public class SkyPvpExpansion extends PlaceholderExpansion {
         if(params.equals("kills"))
             return Integer.toString(plugin.getStatManager().getKills(player, null));
 
-        if(params.equals("kit"))
+        if(params.equals("kit")) {
             return plugin.getKitManager().getAssignedKitName(player.getUniqueId().toString());
+        }
 
         if(params.split("_").length == 2) {
             String[] args = params.split("_");

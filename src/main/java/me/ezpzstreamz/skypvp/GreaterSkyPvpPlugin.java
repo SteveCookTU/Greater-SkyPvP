@@ -10,8 +10,8 @@ import me.ezpzstreamz.skypvp.managers.*;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
+import java.util.Objects;
 
 public class GreaterSkyPvpPlugin extends JavaPlugin {
 
@@ -20,6 +20,8 @@ public class GreaterSkyPvpPlugin extends JavaPlugin {
     private StatManager statManager;
     private ArenaManager arenaManager;
     private MessageManager messageManager;
+
+    private ConnectionManager connectionManager;
 
     @Override
     public void onEnable() {
@@ -32,11 +34,17 @@ public class GreaterSkyPvpPlugin extends JavaPlugin {
             }
         }
 
+        saveDefaultConfig();
+
+        if(getConfig().getBoolean("mysql.enabled")) {
+            connectionManager = new ConnectionManager(this);
+        }
+
         try {
-            kitManager = new KitManager(this);
-            worldManager = new WorldManager(this);
-            statManager = new StatManager(this);
-            arenaManager = new ArenaManager(this);
+            worldManager = new WorldManager(this, getConfig().getBoolean("mysql.enabled"));
+            statManager = new StatManager(this, getConfig().getBoolean("mysql.enabled"));
+            kitManager = new KitManager(this, getConfig().getBoolean("mysql.enabled"));
+            arenaManager = new ArenaManager(this, getConfig().getBoolean("mysql.enabled"));
             messageManager = new MessageManager(this);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
@@ -48,10 +56,10 @@ public class GreaterSkyPvpPlugin extends JavaPlugin {
             getLogger().warning("Could not find PlaceholderAPI! Placeholders are disabled.");
         }
 
-        this.getCommand("skypvp").setExecutor(new CmdSkyPvp(this));
-        this.getCommand("skyarena").setExecutor(new CmdArena(this));
-        this.getCommand("skykit").setExecutor(new CmdKit(this));
-        this.getCommand("skystats").setExecutor(new CmdStats(this));
+        Objects.requireNonNull(this.getCommand("skypvp")).setExecutor(new CmdSkyPvp(this));
+        Objects.requireNonNull(this.getCommand("skyarena")).setExecutor(new CmdArena(this));
+        Objects.requireNonNull(this.getCommand("skykit")).setExecutor(new CmdKit(this));
+        Objects.requireNonNull(this.getCommand("skystats")).setExecutor(new CmdStats(this));
 
         getServer().getPluginManager().registerEvents(new JoinListener(this), this);
         getServer().getPluginManager().registerEvents(new WorldInitListener(this), this);
@@ -72,6 +80,8 @@ public class GreaterSkyPvpPlugin extends JavaPlugin {
             statManager.saveStats();
             arenaManager.saveArenas();
             messageManager.saveMessage();
+            if(connectionManager != null)
+                connectionManager.closePool();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -89,4 +99,6 @@ public class GreaterSkyPvpPlugin extends JavaPlugin {
     public ArenaManager getArenaManager() { return arenaManager; }
 
     public MessageManager getMessageManager() { return messageManager; }
+
+    public ConnectionManager getConnectionManager() { return connectionManager; }
 }

@@ -18,7 +18,7 @@ public class JoinListener implements Listener {
     public void onJoin(PlayerJoinEvent e) {
         e.getPlayer().getInventory().clear();
         String kitName = plugin.getKitManager().getAssignedKitName(e.getPlayer().getUniqueId().toString());
-        if(kitName != null) {
+        if(!kitName.equals("")) {
             plugin.getKitManager().giveKit(e.getPlayer(), kitName);
         }
 
