@@ -3,6 +3,7 @@ package me.ezpzstreamz.skypvp.expansion;
 import me.clip.placeholderapi.expansion.PlaceholderExpansion;
 import me.ezpzstreamz.skypvp.GreaterSkyPvpPlugin;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 
 import java.time.LocalDateTime;
 
@@ -25,22 +26,22 @@ public class SkyPvpExpansion extends PlaceholderExpansion {
     }
 
     @Override
-    public String getIdentifier() {
+    public @NotNull String getIdentifier() {
         return "greaterskypvp";
     }
 
     @Override
-    public String getAuthor() {
+    public @NotNull String getAuthor() {
         return plugin.getDescription().getAuthors().toString();
     }
 
     @Override
-    public String getVersion() {
+    public @NotNull String getVersion() {
         return plugin.getDescription().getVersion();
     }
 
     @Override
-    public String onPlaceholderRequest(Player player, String params) {
+    public String onPlaceholderRequest(Player player, @NotNull String params) {
         if(player == null) {
             return "";
         }

@@ -25,8 +25,9 @@ public class MessageManager {
 
     public void saveMessage() throws IOException {
         final String json = gson.toJson(messageMap);
-        messageFile.delete();
-        Files.write(messageFile.toPath(), json.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+        boolean delete = messageFile.delete();
+        if(delete)
+            Files.write(messageFile.toPath(), json.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
     }
 
     public void reloadMessages(GreaterSkyPvpPlugin plugin) throws FileNotFoundException {

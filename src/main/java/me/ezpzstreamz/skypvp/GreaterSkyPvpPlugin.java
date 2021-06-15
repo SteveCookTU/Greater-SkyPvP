@@ -28,7 +28,9 @@ public class GreaterSkyPvpPlugin extends JavaPlugin {
 
         if(!this.getDataFolder().exists()) {
             try {
-                this.getDataFolder().mkdir();
+                boolean mkdir = this.getDataFolder().mkdir();
+                if(mkdir)
+                    getLogger().info("Generated data folder.");
             } catch (Exception e) {
                 e.printStackTrace();
             }

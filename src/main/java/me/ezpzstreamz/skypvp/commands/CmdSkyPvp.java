@@ -31,8 +31,7 @@ plugin = p;
                     if (plugin.getKitManager().containsKit(a[2])) {
                         s.sendMessage("[SkyPvP] The kit specified already exists. Use \"/skypvp kit delete " + a[2] + "\" and re-create it.");
                     }
-                    if (s instanceof Player) {
-                        Player p = (Player) s;
+                    if (s instanceof Player p) {
                         String kitName = a[2];
                         boolean replace = true;
                         boolean equip = true;
@@ -80,20 +79,19 @@ plugin = p;
                             try {
                                 spawnPoint = Integer.parseInt(a[3]);
                                 switch (spawnPoint) {
-                                    case 0:
+                                    case 0 -> {
                                         plugin.getArenaManager().setLocation(arenaName, spawnPoint, ((Player) s).getLocation());
                                         s.sendMessage("[SkyPvP] " + arenaName + " lobby spawn point set.");
-                                        break;
-                                    case 1:
+                                    }
+                                    case 1 -> {
                                         plugin.getArenaManager().setLocation(arenaName, spawnPoint, ((Player) s).getLocation());
                                         s.sendMessage("[SkyPvP] " + arenaName + " player 1 spawn point set.");
-                                        break;
-                                    case 2:
+                                    }
+                                    case 2 -> {
                                         plugin.getArenaManager().setLocation(arenaName, spawnPoint, ((Player) s).getLocation());
                                         s.sendMessage("[SkyPvP] " + arenaName + " player 2 spawn point set.");
-                                        break;
-                                    default:
-                                        throw new Exception();
+                                    }
+                                    default -> throw new Exception();
                                 }
                             } catch (Exception e) {
                                 s.sendMessage("[SkyPvP] Selected spawn point invalid. Valid range: 0-2");

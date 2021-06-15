@@ -75,8 +75,9 @@ public class KitManager {
     public void saveKits() throws IOException {
         if(!sql) {
             final String json = gson.toJson(kitMap);
-            kitFile.delete();
-            Files.write(kitFile.toPath(), json.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+            boolean delete = kitFile.delete();
+            if(delete)
+                Files.write(kitFile.toPath(), json.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
         } else {
             Connection conn = null;
             PreparedStatement ps = null;
@@ -101,9 +102,10 @@ public class KitManager {
 
                 for(String kit : kitMap.keySet()) {
                     if(old.contains(kit)) {
-                        ps = conn.prepareStatement("UPDATE kits " +
-                                "SET `replace`=?, equip=? " +
-                                "WHERE kitName=?");
+                        ps = conn.prepareStatement("""
+                                UPDATE kits
+                                SET `replace`=?, equip=?
+                                WHERE kitName=?""");
                         ps.setBoolean(1, kitMap.get(kit).shouldReplace());
                         ps.setBoolean(2, kitMap.get(kit).shouldEquip());
                         ps.setString(3, kit);
@@ -111,9 +113,10 @@ public class KitManager {
                         ps.close();
                         String[] items = kitMap.get(kit).getItems();
                         for(int i = 0; i < items.length; i++) {
-                            ps = conn.prepareStatement("UPDATE kit_items " +
-                                    "SET base64String=? " +
-                                    "WHERE kitID=(SELECT kitID FROM kits WHERE kitName=?) AND slotID=?");
+                            ps = conn.prepareStatement("""
+                                    UPDATE kit_items
+                                    SET base64String=?
+                                    WHERE kitID=(SELECT kitID FROM kits WHERE kitName=?) AND slotID=?""");
                             ps.setString(1, items[i]);
                             ps.setString(2, kit);
                             ps.setInt(3, i);
@@ -130,10 +133,11 @@ public class KitManager {
                         ps.close();
                         String[] items = kitMap.get(kit).getItems();
                         for(int i = 0; i < items.length; i++) {
-                            ps = conn.prepareStatement("INSERT INTO kit_items (kitID, slotID, base64string) " +
-                                    "SELECT k.kitID, ?, ? " +
-                                    "FROM kits k " +
-                                    "WHERE k.kitName=?");
+                            ps = conn.prepareStatement("""
+                                    INSERT INTO kit_items (kitID, slotID, base64string)
+                                    SELECT k.kitID, ?, ?
+                                    FROM kits k
+                                    WHERE k.kitName=?""");
                             ps.setInt(1, i);
                             ps.setString(2, items[i]);
                             ps.setString(3, kit);
@@ -154,8 +158,9 @@ public class KitManager {
     public void saveAssignments() throws IOException {
         if(!sql) {
             final String json = gson.toJson(kitAssignments);
-            assignmentsFile.delete();
-            Files.write(assignmentsFile.toPath(), json.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+            boolean delete = assignmentsFile.delete();
+            if(delete)
+                Files.write(assignmentsFile.toPath(), json.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
         } else {
             Connection conn = null;
             PreparedStatement ps = null;
@@ -181,16 +186,18 @@ public class KitManager {
 
                 for(String player : kitAssignments.keySet()) {
                     if(old.contains(player)) {
-                        ps = conn.prepareStatement("UPDATE kit_assignments " +
-                                "SET kitID=(SELECT kitID FROM kits WHERE kitName=?) " +
-                                "WHERE playerID=(SELECT playerID FROM players WHERE uuid=?)");
+                        ps = conn.prepareStatement("""
+                                UPDATE kit_assignments
+                                SET kitID=(SELECT kitID FROM kits WHERE kitName=?)
+                                WHERE playerID=(SELECT playerID FROM players WHERE uuid=?)""");
                         ps.setString(1, kitAssignments.get(player));
                         ps.setString(2, player);
                     } else {
-                        ps = conn.prepareStatement("INSERT INTO kit_assignments (playerID, kitID) " +
-                                "SELECT p.playerID, k.kitID " +
-                                "FROM players p, kits k " +
-                                "WHERE p.uuid=? AND k.kitName=?");
+                        ps = conn.prepareStatement("""
+                                INSERT INTO kit_assignments (playerID, kitID)
+                                SELECT p.playerID, k.kitID
+                                FROM players p, kits k
+                                WHERE p.uuid=? AND k.kitName=?""");
                         ps.setString(1, player);
                         ps.setString(2, kitAssignments.get(player));
                     }
@@ -329,44 +336,47 @@ public class KitManager {
         plugin.getLogger().info("Checking for/creating kit tables");
         try {
             conn = plugin.getConnectionManager().getConnection();
-            ps = conn.prepareStatement("create table if not exists kits\n" +
-                    "(\n" +
-                    "    kitID     int auto_increment\n" +
-                    "        primary key,\n" +
-                    "    kitName   varchar(255)         not null,\n" +
-                    "    `replace` tinyint(1) default 1 not null,\n" +
-                    "    equip     tinyint(1) default 1 not null,\n" +
-                    "    constraint kits_kitName_uindex\n" +
-                    "        unique (kitName)\n" +
-                    ");");
+            ps = conn.prepareStatement("""
+                    create table if not exists kits
+                    (
+                        kitID     int auto_increment
+                            primary key,
+                        kitName   varchar(255)         not null,
+                        `replace` tinyint(1) default 1 not null,
+                        equip     tinyint(1) default 1 not null,
+                        constraint kits_kitName_uindex
+                            unique (kitName)
+                    );""");
             ps.executeUpdate();
             ps.close();
 
-            ps = conn.prepareStatement("create table if not exists kit_items\n" +
-                    "(\n" +
-                    "    kitID        int          not null,\n" +
-                    "    slotID       int          not null,\n" +
-                    "    base64string varchar(600) null,\n" +
-                    "    primary key (kitID, slotID),\n" +
-                    "    constraint kit_items_kits_kitID_fk\n" +
-                    "        foreign key (kitID) references kits (kitID)\n" +
-                    "            on update cascade on delete cascade\n" +
-                    ");");
+            ps = conn.prepareStatement("""
+                    create table if not exists kit_items
+                    (
+                        kitID        int          not null,
+                        slotID       int          not null,
+                        base64string varchar(600) null,
+                        primary key (kitID, slotID),
+                        constraint kit_items_kits_kitID_fk
+                            foreign key (kitID) references kits (kitID)
+                                on update cascade on delete cascade
+                    );""");
             ps.executeUpdate();
             ps.close();
 
-            ps = conn.prepareStatement("create table if not exists kit_assignments\n" +
-                    "(\n" +
-                    "    playerID int not null\n" +
-                    "        primary key,\n" +
-                    "    kitID    int not null,\n" +
-                    "    constraint kit_assignments_kits_kitID_fk\n" +
-                    "        foreign key (kitID) references kits (kitID)\n" +
-                    "            on update cascade on delete cascade,\n" +
-                    "    constraint kit_assignments_players_playerID_fk\n" +
-                    "        foreign key (playerID) references players (playerID)\n" +
-                    "            on update cascade on delete cascade\n" +
-                    ");");
+            ps = conn.prepareStatement("""
+                    create table if not exists kit_assignments
+                    (
+                        playerID int not null
+                            primary key,
+                        kitID    int not null,
+                        constraint kit_assignments_kits_kitID_fk
+                            foreign key (kitID) references kits (kitID)
+                                on update cascade on delete cascade,
+                        constraint kit_assignments_players_playerID_fk
+                            foreign key (playerID) references players (playerID)
+                                on update cascade on delete cascade
+                    );""");
             ps.executeUpdate();
 
         } catch (SQLException e) {
@@ -390,9 +400,10 @@ public class KitManager {
             rs = ps.executeQuery();
             while(rs.next()) {
                 plugin.getLogger().info("Loading kit " + rs.getString("kitName") + "...");
-                PreparedStatement ps2 = conn.prepareStatement("SELECT slotID, base64string\n" +
-                        "FROM kit_items\n" +
-                        "WHERE kitID=?");
+                PreparedStatement ps2 = conn.prepareStatement("""
+                        SELECT slotID, base64string
+                        FROM kit_items
+                        WHERE kitID=?""");
                 ps2.setInt(1, rs.getInt("kitID"));
                 ResultSet rs2 = ps2.executeQuery();
                 String[] items = new String[41];
@@ -407,10 +418,11 @@ public class KitManager {
             ps.close();
             rs.close();
 
-            ps = conn.prepareStatement("SELECT p.uuid, k.kitName\n" +
-                    "FROM kit_assignments ka\n" +
-                    "INNER JOIN players p on ka.playerID = p.playerID\n" +
-                    "INNER JOIN kits k on ka.kitID = k.kitID");
+            ps = conn.prepareStatement("""
+                    SELECT p.uuid, k.kitName
+                    FROM kit_assignments ka
+                    INNER JOIN players p on ka.playerID = p.playerID
+                    INNER JOIN kits k on ka.kitID = k.kitID""");
             rs = ps.executeQuery();
             while(rs.next()) {
                 kitAssignments.put(rs.getString("uuid"), rs.getString("kitName"));

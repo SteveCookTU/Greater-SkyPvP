@@ -53,16 +53,17 @@ public class WorldManager {
         plugin.getLogger().info("Checking for/creating world table");
         try {
             conn = plugin.getConnectionManager().getConnection();
-            ps = conn.prepareStatement("create table if not exists worlds\n" +
-                    "(\n" +
-                    "    worldID  int auto_increment\n" +
-                    "        primary key,\n" +
-                    "    uuid     varchar(36)          not null,\n" +
-                    "    enabled  tinyint(1) default 1 not null,\n" +
-                    "    voidkill tinyint(1) default 1 not null,\n" +
-                    "    constraint worlds_uuid_uindex\n" +
-                    "        unique (uuid)\n" +
-                    ");");
+            ps = conn.prepareStatement("""
+                    create table if not exists worlds
+                    (
+                        worldID  int auto_increment
+                            primary key,
+                        uuid     varchar(36)          not null,
+                        enabled  tinyint(1) default 1 not null,
+                        voidkill tinyint(1) default 1 not null,
+                        constraint worlds_uuid_uindex
+                            unique (uuid)
+                    );""");
             ps.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -105,15 +106,16 @@ public class WorldManager {
 
     public boolean shouldVoidKill(World world) {
         if(worldMap.containsKey(world.getUID().toString()))
-            return (boolean) ((Map<String, Object>)worldMap.get(world.getUID().toString())).get("voidKill");
+            return (boolean) ((Map<?, ?>)worldMap.get(world.getUID().toString())).get("voidKill");
         return true;
     }
 
     public void saveWorlds() throws IOException {
         if(!sql) {
             final String json = gson.toJson(worldMap);
-            worldFile.delete();
-            Files.write(worldFile.toPath(), json.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+            boolean delete = worldFile.delete();
+            if(delete)
+                Files.write(worldFile.toPath(), json.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
         } else {
             Connection conn = null;
             PreparedStatement ps = null;
@@ -138,18 +140,19 @@ public class WorldManager {
 
                 for(String world : worldMap.keySet()) {
                     if(old.contains(world)) {
-                        ps = conn.prepareStatement("UPDATE worlds " +
-                                "SET enabled=?, voidkill=? " +
-                                "WHERE uuid=?");
-                        ps.setBoolean(1, (Boolean) ((Map<String, Object>)worldMap.get(world)).get("enabled"));
-                        ps.setBoolean(2, (Boolean) ((Map<String, Object>)worldMap.get(world)).get("voidKill"));
+                        ps = conn.prepareStatement("""
+                                UPDATE worlds
+                                SET enabled=?, voidkill=?
+                                WHERE uuid=?""");
+                        ps.setBoolean(1, (Boolean) ((Map<?, ?>)worldMap.get(world)).get("enabled"));
+                        ps.setBoolean(2, (Boolean) ((Map<?, ?>)worldMap.get(world)).get("voidKill"));
                         ps.setString(3, world);
                     } else {
                         ps = conn.prepareStatement("INSERT INTO worlds (uuid, enabled, voidkill) " +
                                 "VALUES (?, ?, ?)");
                         ps.setString(1, world);
-                        ps.setBoolean(2, (Boolean) ((Map<String, Object>)worldMap.get(world)).get("enabled"));
-                        ps.setBoolean(3, (Boolean) ((Map<String, Object>)worldMap.get(world)).get("voidKill"));
+                        ps.setBoolean(2, (Boolean) ((Map<?, ?>)worldMap.get(world)).get("enabled"));
+                        ps.setBoolean(3, (Boolean) ((Map<?, ?>)worldMap.get(world)).get("voidKill"));
                     }
                     ps.executeUpdate();
                     ps.close();
@@ -164,6 +167,7 @@ public class WorldManager {
 
     }
 
+    @SuppressWarnings("unchecked")
     public void setVoidKill(World world, boolean enable) {
         if(worldMap.containsKey(world.getUID().toString()))
             ((Map<String, Object>)worldMap.get(world.getUID().toString())).put("voidKill", enable);

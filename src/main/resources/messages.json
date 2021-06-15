@@ -1,6 +1,6 @@
 {
   "noPermission": "&4You do not have permission to use this command.",
-  "statsMessage": "Stats: \nKills: %kills% \nDeaths:%deaths%",
+  "statsMessage": "Stats: \nKills: %kills% \nDeaths: %deaths%",
   "kitReceived": "You have received the %kit% kit.",
   "kitReceivedTimed": "You have received the %kit% kit for %time% seconds.",
   "kitGiven": "You have given the %kit% kit to %player%.",

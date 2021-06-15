@@ -62,8 +62,9 @@ public class ArenaManager {
     public void saveArenas() throws IOException {
         if(!sql) {
             final String json = gson.toJson(arenaMap);
-            arenaFile.delete();
-            Files.write(arenaFile.toPath(), json.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+            boolean delete = arenaFile.delete();
+            if(delete)
+                Files.write(arenaFile.toPath(), json.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
         } else {
             Connection conn = null;
             PreparedStatement ps = null;
@@ -91,21 +92,24 @@ public class ArenaManager {
                     Location player2Location = arenaMap.get(arena).getPlayer2Location();
                     if(old.contains(arena)) {
                         if(spawnLocation != null) {
-                            ps = conn.prepareStatement("UPDATE arena_spawns " +
-                                    "SET xCoordinate=?, yCoordinate=?, zCoordinate=?, pitch=?, yaw=?, worldID=(SELECT worldID FROM worlds WHERE uuid=?) " +
-                                    "WHERE arenaID=(SELECT arenaID FROM arenas WHERE arenaName=?) AND spawnID=0");
+                            ps = conn.prepareStatement("""
+                                    UPDATE arena_spawns
+                                    SET xCoordinate=?, yCoordinate=?, zCoordinate=?, pitch=?, yaw=?, worldID=(SELECT worldID FROM worlds WHERE uuid=?)
+                                    WHERE arenaID=(SELECT arenaID FROM arenas WHERE arenaName=?) AND spawnID=0""");
                             execUpdateStatementParams(ps, arena, spawnLocation);
                         }
                         if(player1Location != null) {
-                            ps = conn.prepareStatement("UPDATE arena_spawns " +
-                                    "SET xCoordinate=?, yCoordinate=?, zCoordinate=?, pitch=?, yaw=?, worldID=(SELECT worldID FROM worlds WHERE uuid=?) " +
-                                    "WHERE arenaID=(SELECT arenaID FROM arenas WHERE arenaName=?) AND spawnID=1");
+                            ps = conn.prepareStatement("""
+                                    UPDATE arena_spawns
+                                    SET xCoordinate=?, yCoordinate=?, zCoordinate=?, pitch=?, yaw=?, worldID=(SELECT worldID FROM worlds WHERE uuid=?)
+                                    WHERE arenaID=(SELECT arenaID FROM arenas WHERE arenaName=?) AND spawnID=1""");
                             execUpdateStatementParams(ps, arena, player1Location);
                         }
                         if(player2Location != null) {
-                            ps = conn.prepareStatement("UPDATE arena_spawns " +
-                                    "SET xCoordinate=?, yCoordinate=?, zCoordinate=?, pitch=?, yaw=?, worldID=(SELECT worldID FROM worlds WHERE uuid=?) " +
-                                    "WHERE arenaID=(SELECT arenaID FROM arenas WHERE arenaName=?) AND spawnID=2");
+                            ps = conn.prepareStatement("""
+                                    UPDATE arena_spawns
+                                    SET xCoordinate=?, yCoordinate=?, zCoordinate=?, pitch=?, yaw=?, worldID=(SELECT worldID FROM worlds WHERE uuid=?)
+                                    WHERE arenaID=(SELECT arenaID FROM arenas WHERE arenaName=?) AND spawnID=2""");
                             execUpdateStatementParams(ps, arena, player2Location);
                         }
                     } else {
@@ -115,48 +119,54 @@ public class ArenaManager {
                         ps.executeUpdate();
                         ps.close();
                         if(spawnLocation != null) {
-                            ps = conn.prepareStatement("INSERT INTO arena_spawns (arenaID, spawnID, xCoordinate, yCoordinate, zCoordinate, pitch, yaw, worldID) " +
-                                    "SELECT a.arenaID, 0, ?, ?, ?, ?, ?, w.worldID " +
-                                    "FROM arenas a, worlds w " +
-                                    "WHERE a.arenaName=? AND w.uuid=?");
+                            ps = conn.prepareStatement("""
+                                    INSERT INTO arena_spawns (arenaID, spawnID, xCoordinate, yCoordinate, zCoordinate, pitch, yaw, worldID)
+                                    SELECT a.arenaID, 0, ?, ?, ?, ?, ?, w.worldID
+                                    FROM arenas a, worlds w
+                                    WHERE a.arenaName=? AND w.uuid=?""");
                             setInsertStatement(ps, arena, spawnLocation);
                         } else {
-                            ps = conn.prepareStatement("INSERT INTO arena_spawns (arenaID, spawnID) " +
-                                    "SELECT a.arenaID, 0 " +
-                                    "FROM arenas a " +
-                                    "WHERE a.arenaName=? ");
+                            ps = conn.prepareStatement("""
+                                    INSERT INTO arena_spawns (arenaID, spawnID)
+                                    SELECT a.arenaID, 0
+                                    FROM arenas a
+                                    WHERE a.arenaName=?\s""");
                             ps.setString(1, arena);
                         }
                         ps.executeUpdate();
                         ps.close();
 
                         if(player1Location != null) {
-                            ps = conn.prepareStatement("INSERT INTO arena_spawns (arenaID, spawnID, xCoordinate, yCoordinate, zCoordinate, pitch, yaw, worldID) " +
-                                    "SELECT a.arenaID, 1, ?, ?, ?, ?, ?, w.worldID " +
-                                    "FROM arenas a, worlds w " +
-                                    "WHERE a.arenaName=? AND w.uuid=?");
+                            ps = conn.prepareStatement("""
+                                    INSERT INTO arena_spawns (arenaID, spawnID, xCoordinate, yCoordinate, zCoordinate, pitch, yaw, worldID)
+                                    SELECT a.arenaID, 1, ?, ?, ?, ?, ?, w.worldID
+                                    FROM arenas a, worlds w
+                                    WHERE a.arenaName=? AND w.uuid=?""");
                             setInsertStatement(ps, arena, player1Location);
                         } else {
-                            ps = conn.prepareStatement("INSERT INTO arena_spawns (arenaID, spawnID) " +
-                                    "SELECT a.arenaID, 1 " +
-                                    "FROM arenas a " +
-                                    "WHERE a.arenaName=? ");
+                            ps = conn.prepareStatement("""
+                                    INSERT INTO arena_spawns (arenaID, spawnID)
+                                    SELECT a.arenaID, 1
+                                    FROM arenas a
+                                    WHERE a.arenaName=?\s""");
                             ps.setString(1, arena);
                         }
                         ps.executeUpdate();
                         ps.close();
 
                         if(player2Location != null) {
-                            ps = conn.prepareStatement("INSERT INTO arena_spawns (arenaID, spawnID, xCoordinate, yCoordinate, zCoordinate, pitch, yaw, worldID) " +
-                                    "SELECT a.arenaID, 2, ?, ?, ?, ?, ?, w.worldID " +
-                                    "FROM arenas a, worlds w " +
-                                    "WHERE a.arenaName=? AND w.uuid=?");
+                            ps = conn.prepareStatement("""
+                                    INSERT INTO arena_spawns (arenaID, spawnID, xCoordinate, yCoordinate, zCoordinate, pitch, yaw, worldID)
+                                    SELECT a.arenaID, 2, ?, ?, ?, ?, ?, w.worldID
+                                    FROM arenas a, worlds w
+                                    WHERE a.arenaName=? AND w.uuid=?""");
                             setInsertStatement(ps, arena, player2Location);
                         } else {
-                            ps = conn.prepareStatement("INSERT INTO arena_spawns (arenaID, spawnID) " +
-                                    "SELECT a.arenaID, 2 " +
-                                    "FROM arenas a " +
-                                    "WHERE a.arenaName=? ");
+                            ps = conn.prepareStatement("""
+                                    INSERT INTO arena_spawns (arenaID, spawnID)
+                                    SELECT a.arenaID, 2
+                                    FROM arenas a
+                                    WHERE a.arenaName=?\s""");
                             ps.setString(1, arena);
                         }
                         ps.executeUpdate();
@@ -335,16 +345,10 @@ public class ArenaManager {
     }
 
     public void setLocation(String name, int index, Location l) {
-        switch(index) {
-            case 0:
-                arenaMap.get(name).setSpawnLocation(l);
-                break;
-            case 1:
-                arenaMap.get(name).setPlayer1Location(l);
-                break;
-            case 2:
-                arenaMap.get(name).setPlayer2Location(l);
-                break;
+        switch (index) {
+            case 0 -> arenaMap.get(name).setSpawnLocation(l);
+            case 1 -> arenaMap.get(name).setPlayer1Location(l);
+            case 2 -> arenaMap.get(name).setPlayer2Location(l);
         }
     }
 
@@ -354,32 +358,32 @@ public class ArenaManager {
         plugin.getLogger().info("Checking for/creating Arena tables");
         try {
             conn = plugin.getConnectionManager().getConnection();
-            ps = conn.prepareStatement("CREATE TABLE IF NOT EXISTS arenas (\n" +
-                    "arenaID   int auto_increment\n" +
-                    "    primary key,\n" +
-                    "arenaName varchar(255) not null,\n" +
-                    "constraint arenas_arenaName_uindex\n" +
-                    "    unique (arenaName)" +
-                    ");");
+            ps = conn.prepareStatement("""
+                    CREATE TABLE IF NOT EXISTS arenas (
+                    arenaID   int auto_increment
+                        primary key,
+                    arenaName varchar(255) not null,
+                    constraint arenas_arenaName_uindex
+                        unique (arenaName));""");
             ps.executeUpdate();
             ps.close();
-            ps = conn.prepareStatement("CREATE TABLE IF NOT EXISTS arena_spawns (\n" +
-                    "arenaID     int    not null,\n" +
-                    "spawnID     int    not null,\n" +
-                    "xCoordinate double null,\n" +
-                    "yCoordinate double null,\n" +
-                    "zCoordinate double null,\n" +
-                    "pitch       double null,\n" +
-                    "yaw         double null,\n" +
-                    "worldID     int    null,\n" +
-                    "primary key (arenaID, spawnID),\n" +
-                    "constraint arena_spawns_arenas_arenaID_fk\n" +
-                    "    foreign key (arenaID) references arenas (arenaID)\n" +
-                    "        on update cascade on delete cascade,\n" +
-                    "constraint arena_spawns_worlds_worldID_fk\n" +
-                    "    foreign key (worldID) references worlds (worldID)\n" +
-                    "        on update cascade on delete cascade" +
-                    ");");
+            ps = conn.prepareStatement("""
+                    CREATE TABLE IF NOT EXISTS arena_spawns (
+                    arenaID     int    not null,
+                    spawnID     int    not null,
+                    xCoordinate double null,
+                    yCoordinate double null,
+                    zCoordinate double null,
+                    pitch       double null,
+                    yaw         double null,
+                    worldID     int    null,
+                    primary key (arenaID, spawnID),
+                    constraint arena_spawns_arenas_arenaID_fk
+                        foreign key (arenaID) references arenas (arenaID)
+                            on update cascade on delete cascade,
+                    constraint arena_spawns_worlds_worldID_fk
+                        foreign key (worldID) references worlds (worldID)
+                            on update cascade on delete cascade);""");
             ps.executeUpdate();
         } catch(SQLException e) {
             e.printStackTrace();
@@ -396,10 +400,11 @@ public class ArenaManager {
         plugin.getLogger().info("Loading arena data from database...");
         try {
             conn = plugin.getConnectionManager().getConnection();
-            ps = conn.prepareStatement("SELECT a.arenaName, asp.spawnID, asp.xCoordinate, asp.yCoordinate, asp.zCoordinate, asp.pitch, asp.yaw, w.uuid\n" +
-                    "FROM arenas a\n" +
-                    "INNER JOIN arena_spawns asp ON asp.arenaID = a.arenaID\n" +
-                    "LEFT OUTER JOIN worlds w ON asp.worldID = w.worldID;");
+            ps = conn.prepareStatement("""
+                    SELECT a.arenaName, asp.spawnID, asp.xCoordinate, asp.yCoordinate, asp.zCoordinate, asp.pitch, asp.yaw, w.uuid
+                    FROM arenas a
+                    INNER JOIN arena_spawns asp ON asp.arenaID = a.arenaID
+                    LEFT OUTER JOIN worlds w ON asp.worldID = w.worldID;""");
             rs = ps.executeQuery();
             while(rs.next()) {
                 String arenaName = rs.getString("arenaName");
@@ -413,8 +418,8 @@ public class ArenaManager {
                                     rs.getDouble("xCoordinate"),
                                     rs.getDouble("yCoordinate"),
                                     rs.getDouble("zCoordinate"),
-                                    new Double(rs.getDouble("yaw")).floatValue(),
-                                    new Double(rs.getDouble("pitch")).floatValue()));
+                                    Double.valueOf(rs.getDouble("yaw")).floatValue(),
+                                    Double.valueOf(rs.getDouble("pitch")).floatValue()));
                 }
             }
         } catch (SQLException e) {

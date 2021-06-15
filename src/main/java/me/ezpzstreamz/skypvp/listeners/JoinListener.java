@@ -1,7 +1,6 @@
 package me.ezpzstreamz.skypvp.listeners;
 
 import me.ezpzstreamz.skypvp.GreaterSkyPvpPlugin;
-import me.ezpzstreamz.skypvp.managers.KitManager;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;

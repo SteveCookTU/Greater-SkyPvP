@@ -44,8 +44,9 @@ public class StatManager {
     public void saveStats() throws IOException {
         if(!sql) {
             final String json = gson.toJson(statMap);
-            statFile.delete();
-            Files.write(statFile.toPath(), json.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+            boolean delete = statFile.delete();
+            if(delete)
+                Files.write(statFile.toPath(), json.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
         } else {
             Connection conn = null;
             PreparedStatement ps = null;
@@ -87,23 +88,29 @@ public class StatManager {
                 ps.close();
 
                 for(String player : statMap.keySet()) {
-                    for(String datetime : ((Map<String, List<String>>)statMap.get(player)).get("kills")) {
-                        ps = conn.prepareStatement("INSERT INTO kill_record (playerID, datetime) " +
-                                "SELECT p.playerID, ? " +
-                                "FROM players p " +
-                                "WHERE p.uuid=?");
-                        ps.setTimestamp(1, Timestamp.valueOf(LocalDateTime.parse(datetime)));
+                    Object o = statMap.get(player);
+                    Object killList = ((Map<?, ?>) o).get("kills");
+                    for(Object datetime : ((List<?>)killList)) {
+                        ps = conn.prepareStatement("""
+                                INSERT INTO kill_record (playerID, datetime)
+                                SELECT p.playerID, ?
+                                FROM players p
+                                WHERE p.uuid=?""");
+                        ps.setTimestamp(1, Timestamp.valueOf(LocalDateTime.parse((String)datetime)));
                         ps.setString(2, player);
                         ps.executeUpdate();
                         ps.close();
                     }
 
-                    for(String datetime : ((Map<String, List<String>>)statMap.get(player)).get("deaths")) {
-                        ps = conn.prepareStatement("INSERT INTO death_record (playerID, datetime) " +
-                                "SELECT p.playerID, ? " +
-                                "FROM players p " +
-                                "WHERE p.uuid=?");
-                        ps.setTimestamp(1, Timestamp.valueOf(LocalDateTime.parse(datetime)));
+                    Object deathList = ((Map<?, ?>) o).get("deaths");
+
+                    for(Object datetime : ((List<?>)deathList)) {
+                        ps = conn.prepareStatement("""
+                                INSERT INTO death_record (playerID, datetime)
+                                SELECT p.playerID, ?
+                                FROM players p
+                                WHERE p.uuid=?""");
+                        ps.setTimestamp(1, Timestamp.valueOf(LocalDateTime.parse((String)datetime)));
                         ps.setString(2, player);
                         ps.executeUpdate();
                         ps.close();
@@ -131,49 +138,46 @@ public class StatManager {
 
     public int getKills(Player player, LocalDateTime limit) {
         if(statMap.containsKey(player.getUniqueId().toString())) {
-            if(limit == null) {
-                return ((List<String>)((Map<String, Object>)statMap.get(player.getUniqueId().toString())).get("kills")).size();
-            } else {
-                List<String> kills = (List<String>)((Map<String, Object>)statMap.get(player.getUniqueId().toString())).get("kills");
-                int count = 0;
-                for(int i = kills.size() - 1; i >= 0; i--) {
-                    if(LocalDateTime.parse(kills.get(i)).isAfter(limit))
-                        count++;
-                    else
-                        break;
-                }
-                return count;
-            }
+            Object o = statMap.get(player.getUniqueId().toString());
+            Object killList = ((Map<?, ?>) o).get("kills");
+            return GetStatListCount(limit, killList);
         }
         return 0;
     }
 
     public int getDeaths(Player player, LocalDateTime limit) {
         if(statMap.containsKey(player.getUniqueId().toString())) {
-            if(limit == null) {
-                return ((List<String>)((Map<String, Object>)statMap.get(player.getUniqueId().toString())).get("deaths")).size();
-            } else {
-                List<String> deaths = (List<String>)((Map<String, Object>)statMap.get(player.getUniqueId().toString())).get("deaths");
-                int count = 0;
-                for(int i = deaths.size() - 1; i >= 0; i--) {
-                    if(LocalDateTime.parse(deaths.get(i)).isAfter(limit))
-                        count++;
-                    else
-                        break;
-                }
-                return count;
-            }
+            Object o = statMap.get(player.getUniqueId().toString());
+            Object deathList = ((Map<?, ?>) o).get("deaths");
+            return GetStatListCount(limit, deathList);
         }
 
         return 0;
     }
 
+    private int GetStatListCount(LocalDateTime limit, Object deathList) {
+        if(limit == null) {
+            return ((List<?>)deathList).size();
+        } else {
+            int count = 0;
+            for(int i = ((List<?>) deathList).size() - 1; i >= 0; i--) {
+                if(LocalDateTime.parse((String) ((List<?>) deathList).get(i)).isAfter(limit))
+                    count++;
+                else
+                    break;
+            }
+            return count;
+        }
+    }
+
+    @SuppressWarnings("unchecked")
     public void addKill(Player player, LocalDateTime time) {
         if(statMap.containsKey(player.getUniqueId().toString())) {
             ((List<String>)((Map<String, Object>)statMap.get(player.getUniqueId().toString())).get("kills")).add(time.toString());
         }
     }
 
+    @SuppressWarnings("unchecked")
     public void addDeath(Player player, LocalDateTime time) {
         if(statMap.containsKey(player.getUniqueId().toString())) {
             ((List<String>)((Map<String, Object>)statMap.get(player.getUniqueId().toString())).get("deaths")).add(time.toString());
@@ -186,36 +190,39 @@ public class StatManager {
         plugin.getLogger().info("Checking for/creating statistic tables");
         try {
             conn = plugin.getConnectionManager().getConnection();
-            ps = conn.prepareStatement("create table if not exists players\n" +
-                    "(\n" +
-                    "    playerID int auto_increment\n" +
-                    "        primary key,\n" +
-                    "    uuid     varchar(36) not null,\n" +
-                    "    constraint players_uuid_uindex\n" +
-                    "        unique (uuid)\n" +
-                    ");");
+            ps = conn.prepareStatement("""
+                    create table if not exists players
+                    (
+                        playerID int auto_increment
+                            primary key,
+                        uuid     varchar(36) not null,
+                        constraint players_uuid_uindex
+                            unique (uuid)
+                    );""");
             ps.executeUpdate();
             ps.close();
 
-            ps = conn.prepareStatement("create table if not exists kill_record\n" +
-                    "(\n" +
-                    "    playerID int                                  not null,\n" +
-                    "    datetime datetime default current_timestamp() not null,\n" +
-                    "    constraint kill_record_players_playerID_fk\n" +
-                    "        foreign key (playerID) references players (playerID)\n" +
-                    "            on update cascade on delete cascade\n" +
-                    ");");
+            ps = conn.prepareStatement("""
+                    create table if not exists kill_record
+                    (
+                        playerID int                                  not null,
+                        datetime datetime default current_timestamp() not null,
+                        constraint kill_record_players_playerID_fk
+                            foreign key (playerID) references players (playerID)
+                                on update cascade on delete cascade
+                    );""");
             ps.executeUpdate();
             ps.close();
 
-            ps = conn.prepareStatement("create table if not exists death_record\n" +
-                    "(\n" +
-                    "    playerID int                                  not null,\n" +
-                    "    datetime datetime default current_timestamp() not null,\n" +
-                    "    constraint death_record_players_playerID_fk\n" +
-                    "        foreign key (playerID) references players (playerID)\n" +
-                    "            on update cascade on delete cascade\n" +
-                    ");");
+            ps = conn.prepareStatement("""
+                    create table if not exists death_record
+                    (
+                        playerID int                                  not null,
+                        datetime datetime default current_timestamp() not null,
+                        constraint death_record_players_playerID_fk
+                            foreign key (playerID) references players (playerID)
+                                on update cascade on delete cascade
+                    );""");
             ps.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -236,9 +243,10 @@ public class StatManager {
             rs = ps.executeQuery();
             while(rs.next()) {
                 Map<String, Object> stats = new HashMap<>();
-                PreparedStatement ps2 = conn.prepareStatement("SELECT datetime " +
-                        "FROM kill_record " +
-                        "WHERE playerID=(SELECT playerID FROM players WHERE uuid=?)");
+                PreparedStatement ps2 = conn.prepareStatement("""
+                        SELECT datetime
+                        FROM kill_record
+                        WHERE playerID=(SELECT playerID FROM players WHERE uuid=?)""");
                 ps2.setString(1, rs.getString("uuid"));
                 ResultSet rs2 = ps2.executeQuery();
                 List<String> kills = new ArrayList<>();
@@ -249,9 +257,10 @@ public class StatManager {
                 ps2.close();
                 rs2.close();
 
-                ps2 = conn.prepareStatement("SELECT datetime " +
-                        "FROM death_record " +
-                        "WHERE playerID=(SELECT playerID FROM players WHERE uuid=?)");
+                ps2 = conn.prepareStatement("""
+                        SELECT datetime
+                        FROM death_record
+                        WHERE playerID=(SELECT playerID FROM players WHERE uuid=?)""");
                 ps2.setString(1, rs.getString("uuid"));
                 rs2 = ps2.executeQuery();
                 List<String> deaths = new ArrayList<>();

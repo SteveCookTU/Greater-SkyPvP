@@ -19,3 +19,7 @@ commands:
   skystats:
     description: Use to obtain player stats.
     usage: /skystats [playerName]
+
+libraries:
+  - com.zaxxer:HikariCP:4.0.3
+  - org.slf4j:slf4j-simple:1.7.30

@@ -120,7 +120,7 @@ public class CmdKit implements TabExecutor {
         return completions;
     }
 
-    class KitBukkitRunnable extends BukkitRunnable {
+    static class KitBukkitRunnable extends BukkitRunnable {
 
         private final String previousKit;
         private final Player player;

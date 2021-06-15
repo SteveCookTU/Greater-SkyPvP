@@ -7,6 +7,8 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageEvent;
 
+import java.util.Objects;
+
 public class VoidListener implements Listener {
 
     private final WorldManager worldManager;
@@ -21,7 +23,7 @@ public class VoidListener implements Listener {
             if(e.getCause() == EntityDamageEvent.DamageCause.VOID) {
                 if(worldManager.shouldVoidKill(e.getEntity().getWorld())) {
                     Player p = (Player) e.getEntity();
-                    ((Player) e.getEntity()).damage(p.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue() + 1000);
+                    ((Player) e.getEntity()).damage(Objects.requireNonNull(p.getAttribute(Attribute.GENERIC_MAX_HEALTH)).getValue() + 1000);
                 }
             }
         }
